@@ -1,0 +1,104 @@
+﻿@page "/macros"
+@using S1.Helper.Web.Shared
+@inject HttpClient Http
+
+<h5>Studio One Macros</h5>
+<p>Available Macros</p>
+
+@if (macros == null)
+{
+    <p><em>Loading file data...</em></p>
+}
+else
+{
+    <div class="container-fluid">
+        <div class="row">
+            <table class="table small col-6">
+                <thead>
+                    <tr>
+                        <th width="1%"></th>
+                        <th width="2%">Group</th>
+                        <th width="5%">Title</th>
+                        <th width="10%">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var macro in macros)
+                    {
+                        <tr style="padding:0">
+                            <td>
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div><button title="Duplicate" @onclick=@((x) => SelectMacro(macro))><i class="oi oi-account-login"></i></button></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@macro.group</td>
+                            <td>@macro.title</td>
+                            <td>@macro.description</td>
+                            @*<td>
+                                <div>
+                                @foreach(var cmd in @macro.CommandElement)
+                                {
+                                <div>
+                                @cmd.name @cmd.CommandArgument
+                                </div>
+                                }
+                                </div>
+                                </td>*@
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="col-6">
+                @if (selectedMacro != null)
+                {
+                    <div style="position:fixed">
+                        @foreach (var item in selectedMacro.CommandElement)
+                        {
+                            <div>
+                                @item.name
+
+                                @if (item.CommandArgument != null)
+                                {
+                                    @foreach (var cmd in item.CommandArgument)
+                                    {
+                                        <table>                                            
+                                            <tr>
+                                                <td>@cmd.name</td>
+                                                <td>@cmd.value</td>
+                                            </tr>
+                                        </table>
+                                        <hr />
+                                    }
+                                }
+
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    private S1.Domain.Macro[] macros;
+
+    private S1.Domain.Macro selectedMacro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        macros = (await Http.GetFromJsonAsync<S1.Domain.Macro[]>("Macros"))?.OrderBy(x => x.group).ToArray();
+    }
+
+    protected void SelectMacro(S1.Domain.Macro macro)
+    {
+        selectedMacro = macro;
+        StateHasChanged();
+        Console.WriteLine("selected");
+    }
+
+}
